@@ -1,0 +1,8 @@
+data/
+out/
+.venv/
+.claude/
+__pycache__/
+*.pyc
+*.las
+*.csv

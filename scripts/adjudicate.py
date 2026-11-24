@@ -29,12 +29,13 @@ Run:  python adjudicate.py
 
 from __future__ import annotations
 
+import os
 import sys
 import time
 
 import numpy as np
 
-sys.path.insert(0, ".")
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scan2twin import CarveConfig, CarveResult, carve, metrics, traversal
 from scan2twin.grid import VoxelGrid, sorted_membership

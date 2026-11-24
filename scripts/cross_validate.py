@@ -27,6 +27,7 @@ import sys
 
 import numpy as np
 
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ".")
 
 import matplotlib

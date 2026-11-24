@@ -3,6 +3,13 @@ import numpy as np
 from scipy.spatial import cKDTree
 import matplotlib.pyplot as plt
 import os
+import sys
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # paths below are relative to the repo root
 
 # File paths
 scan1_file = "data/lecturehall/lecturehall1.pose1.object1.label.csv"

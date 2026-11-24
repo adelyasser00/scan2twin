@@ -29,7 +29,7 @@ import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(HERE, "data", "lecturehall")
 SCAN1_FILE = os.path.join(DATA, "lecturehall1.pose1.object1.label.csv")
 SCAN2_FILE = os.path.join(DATA, "lecturehall1.pose2.object2.label.csv")

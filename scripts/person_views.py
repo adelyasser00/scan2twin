@@ -19,11 +19,11 @@ except Exception:
 
 import numpy as np
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scan2twin.io.readers import load_lecturehall
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(HERE, "data", "lecturehall")
 OUT_DIR = os.path.join(HERE, "out")
 MAX_POINTS = 4_000_000

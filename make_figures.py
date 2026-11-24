@@ -77,10 +77,22 @@ def fig_sweep(scene, out="out/fig1_sweep.png"):
         r = np.array([r[1] for r in rows[nbhd]])
         ax.plot(np.maximum(d, 1e-4), r, mk + "-", color=colour, label=label,
                 lw=2.2, ms=8, mec="white", mew=1.3, zorder=4)
-        for k, (dd, rr, m) in enumerate(rows[nbhd]):
-            dy = 9 if k % 2 == 0 else -14
-            ax.annotate(f"{m:g} m", (max(dd, 1e-4), rr), textcoords="offset points",
-                        xytext=(6, dy), fontsize=7.8, color=colour, alpha=.9)
+        if nbhd == 0:
+            # the six markers sit almost on top of each other: label them in a
+            # column to the left, joined by thin leader lines, in marker order
+            pts = sorted(rows[nbhd], key=lambda q: -q[1])
+            ys = np.linspace(99.75, 97.85, len(pts))
+            for (dd, rr, m), y in zip(pts, ys):
+                ax.annotate(f"{m:g} m", (max(dd, 1e-4), rr), xytext=(4.0, y),
+                            textcoords="data", fontsize=7.8, color=colour,
+                            ha="right", va="center", zorder=3,
+                            arrowprops=dict(arrowstyle="-", color=colour, lw=.7,
+                                            alpha=.55, shrinkA=2, shrinkB=0))
+        else:
+            off = {0.08: (4, 9), 0.12: (4, -14), 0.18: (-12, 10)}
+            for dd, rr, m in rows[nbhd]:
+                ax.annotate(f"{m:g} m", (max(dd, 1e-4), rr), textcoords="offset points",
+                            xytext=off.get(m, (9, -3)), fontsize=7.8, color=colour, alpha=.9)
 
     ax.set_xscale("log")
     ax.set_xlim(6e-5, 120)
@@ -101,7 +113,7 @@ def fig_sweep(scene, out="out/fig1_sweep.png"):
              fontsize=14, weight="bold", va="top")
     fig.text(0.045, 0.895,
              "Each marker is one free-space margin setting on the same 4-station synthetic capture.\n"
-             "Dropping the angular agreement check buys 8 points of recall and destroys up to a third of the real scene.",
+             "Dropping the angular agreement check buys 8 to 9 points of recall and destroys 22 to 42% of the real scene.",
              fontsize=9.2, color="#5a636e", va="top")
     fig.savefig(out)
     plt.close(fig)
@@ -150,51 +162,48 @@ def fig_plan(scene, res, out="out/fig2_plan.png", station_idx=1):
 
 
 def fig_mechanism(out="out/fig3_mechanism.png"):
-    """Schematic. Deliberately drawn, not plotted: it is an explainer."""
-    fig, ax = plt.subplots(figsize=(9.6, 5.4))
-    A = np.array([1.0, 1.2])
-    B = np.array([13.5, 1.6])
-    wall_x = 9.0
-    ghost = np.array([5.6, 3.3])
+    """Schematic. Deliberately drawn, not plotted: it is an explainer.
 
-    ax.plot([wall_x, wall_x], [-0.4, 7.4], color=INK, lw=6, solid_capstyle="butt")
-    ax.text(wall_x + .25, 7.0, "facade", fontsize=9.5, color=INK)
+    Both stations stand on the same side of the wall, and B's beams go through
+    the spot where A recorded the person before they reach it.
+    """
+    fig, ax = plt.subplots(figsize=(9.6, 5.8))
+    A = np.array([1.5, 0.8])
+    B = np.array([10.5, 0.8])
+    wall_y = 7.0
+    ghost = np.array([6.0, 3.6])
 
-    for t in np.linspace(-0.5, 0.55, 15):
-        tgt = ghost + np.array([0, t])
-        ax.plot([A[0], tgt[0]], [A[1], tgt[1]], color=RED, lw=.7, alpha=.5)
-    ax.add_patch(Circle(ghost, .55, color=RED, alpha=.30, lw=0))
-    ax.add_patch(Circle(ghost, .30, color=RED, alpha=.85, lw=0))
-    ax.text(ghost[0] - .1, ghost[1] + .95,
+    ax.plot([-1.5, 13.2], [wall_y, wall_y], color=INK, lw=6, solid_capstyle="butt")
+    ax.text(13.2, wall_y + .3, "wall", fontsize=9.5, color=INK, ha="right")
+
+    for s in np.linspace(-0.36, 0.36, 11):
+        d = (ghost + s * np.array([0.53, 0.85])) - B
+        end = B + d * ((wall_y - B[1]) / d[1])
+        ax.plot([B[0], end[0]], [B[1], end[1]], color=BLUE, lw=.8, alpha=.55, zorder=2)
+    for s in np.linspace(-0.45, 0.45, 13):
+        tgt = ghost + s * np.array([-0.53, 0.85])
+        ax.plot([A[0], tgt[0]], [A[1], tgt[1]], color=RED, lw=.7, alpha=.5, zorder=3)
+    ax.add_patch(Circle(ghost, .55, color=RED, alpha=.30, lw=0, zorder=4))
+    ax.add_patch(Circle(ghost, .30, color=RED, alpha=.85, lw=0, zorder=5))
+    ax.text(ghost[0] + 1.0, ghost[1] + .95,
             "person, present only\nwhen A scanned",
-            fontsize=9, color=RED, ha="center")
+            fontsize=9, color=RED, ha="left", va="center")
 
-    for t in np.linspace(-0.9, 1.0, 11):
-        d = (ghost + np.array([0, t])) - B
-        d = d / np.linalg.norm(d)
-        end = B + d * ((wall_x - B[0]) / d[0])
-        ax.plot([B[0], end[0]], [B[1], end[1]], color=BLUE, lw=.8, alpha=.55)
+    for P, c, n in ((A, RED, "station A"), (B, BLUE, "station B")):
+        ax.plot(*P, "^", color=c, ms=15, mec="white", mew=1.6, zorder=6)
+        ax.text(P[0], P[1] - .8, n, fontsize=10, color=c, ha="center", weight="bold")
 
-    ax.plot(*A, "^", color=RED, ms=15, mec="white", mew=1.6, zorder=6)
-    ax.text(A[0], A[1] - .75, "station A", fontsize=10, color=RED,
-            ha="center", weight="bold")
-    ax.plot(*B, "^", color=BLUE, ms=15, mec="white", mew=1.6, zorder=6)
-    ax.text(B[0], B[1] - .75, "station B", fontsize=10, color=BLUE,
-            ha="center", weight="bold")
-
-    ax.annotate("", xy=(wall_x - .2, 4.6), xytext=(ghost[0] + .7, 3.9),
-                arrowprops=dict(arrowstyle="-|>", color=BLUE, lw=1.5))
-    ax.text(6.6, 5.5,
+    ax.text(-1.2, 4.0,
             "B's beams reach the wall.\nThey passed through the space\n"
             "where A recorded a person.",
-            fontsize=9.5, color=BLUE)
-    ax.text(0.4, 6.6,
+            fontsize=9.5, color=BLUE, va="center")
+    ax.text(-1.2, 8.35,
             "No timestamps. No tracking. No model.\n"
             "Two viewpoints and their origins is the whole dependency list.",
-            fontsize=9.5, color=INK, weight="bold")
+            fontsize=9.5, color=INK, weight="bold", va="center")
 
-    ax.set_xlim(-.5, 15.5)
-    ax.set_ylim(-1.4, 7.6)
+    ax.set_xlim(-1.6, 13.6)
+    ax.set_ylim(-.6, 9.1)
     ax.set_aspect("equal")
     ax.axis("off")
     ax.set_title("Why a second tripod position is proof",

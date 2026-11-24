@@ -27,6 +27,7 @@ import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
 
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # paths below are relative to the repo root
 DATA = "data/lecturehall"
 SCAN1_FILE = f"{DATA}/lecturehall1.pose1.object1.label.csv"
 SCAN2_FILE = f"{DATA}/lecturehall1.pose2.object2.label.csv"

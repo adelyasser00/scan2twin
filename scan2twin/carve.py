@@ -152,8 +152,8 @@ def carve(scene: Scene, config: CarveConfig | None = None) -> CarveResult:
 
         warnings.warn(
             "neighbourhood=0 disables the angular agreement check. Measured on "
-            "the synthetic benchmark this raises surface damage from ~0.002% to "
-            "between 9% and 50% while ghost recall barely moves. Recall will "
+            "the synthetic benchmark this raises surface damage from at most 0.002% to "
+            "between 22% and 42% for 8 to 9 points of ghost recall. Recall will "
             "look better and the deliverable will be destroyed. Only use this "
             "to reproduce that finding.",
             RuntimeWarning,

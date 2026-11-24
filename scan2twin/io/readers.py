@@ -273,9 +273,11 @@ def _read_lecturehall_points(
     centimetres. The file is read in `chunk`-row blocks and never held in full.
 
     When `max_points` is set, a single systematic stride is taken across the
-    ENTIRE file (every k-th row, k = total // max_points) rather than the first
-    N rows, so a development subset still spans the whole sweep instead of one
-    contiguous arc of it.
+    ENTIRE file (every k-th row, k = ceil(total / max_points)) rather than the
+    first N rows, so a development subset still spans the whole sweep instead of
+    one contiguous arc of it. The stride is rounded UP: rounding down and then
+    cutting to max_points dropped the tail of the file, which at 4 M points was
+    10.4% of station 2 and exactly the sector that saw through the moving points.
     """
     try:
         import pandas as pd
@@ -289,7 +291,7 @@ def _read_lecturehall_points(
     stride = 1
     if max_points is not None:
         total = _count_lines(points_csv)
-        stride = max(1, total // int(max_points))
+        stride = max(1, -(-total // int(max_points)))  # ceil
 
     reader = pd.read_csv(
         points_csv, header=None, names=names, usecols=["x", "y", "z", "label"],
@@ -307,14 +309,9 @@ def _read_lecturehall_points(
         seen += m
         xyz_parts.append(part[["x", "y", "z"]].to_numpy(dtype=np.float64))
         lab_parts.append(part["label"].to_numpy(dtype=np.int8))
-        if max_points is not None and stride == 1 and sum(len(p) for p in lab_parts) >= max_points:
-            break
 
     pts_cm = np.vstack(xyz_parts) if xyz_parts else np.zeros((0, 3))
     labels = np.concatenate(lab_parts) if lab_parts else np.zeros(0, dtype=np.int8)
-    if max_points is not None and len(pts_cm) > max_points:
-        pts_cm = pts_cm[:max_points]
-        labels = labels[:max_points]
 
     pts_m = (pts_cm * LECTUREHALL_CM_TO_M) @ R.T + t_m
     return np.ascontiguousarray(pts_m), labels
